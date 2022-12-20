@@ -1,0 +1,83 @@
+version: "3"
+services:
+  nosql-db:
+    image: mongo
+    ports:
+      - "27018:27017"
+    container_name: nosql-db
+    volumes:
+      - ./db/:/data/db
+  auth:
+    build:
+      dockerfile: Dockerfile
+      context: ./auth
+    container_name: auth
+    ports:
+      - "8004:8004"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    volumes:
+      - .:/app
+      - /app/auth/node_modules
+
+    env_file:
+      - ./auth/.env.dev
+  branch:
+    build:
+      dockerfile: Dockerfile
+      context: ./branch
+    container_name: branch
+    ports:
+      - "8001:8001"
+    restart: always
+    depends_on:
+      - "nosql-db"
+    volumes:
+      - .:/app
+      - /app/branch/node_modules
+    env_file:
+      - ./branch/.env.dev
+  operation:
+    build:
+      dockerfile: Dockerfile
+      context: ./operation
+    container_name: operation
+    ports:
+      - "8003:8003"
+    restart: always
+    depends_on:
+      - "nosql-db"
+
+    volumes:
+      - .:/app/
+      - /app/operation/node_modules
+    env_file:
+      - ./operation/.env.dev
+  user:
+    build:
+      dockerfile: Dockerfile
+      context: ./user
+    container_name: user
+    ports:
+      - "8002:8002"
+    restart: always
+    depends_on:
+      - "nosql-db"
+
+    volumes:
+      - .:/app/
+      - /app/user/node_modules
+    env_file:
+      - ./user/.env.dev
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./proxy
+    depends_on:
+      - auth
+      - branch
+      - operation
+      - user
+    ports:
+      - 80:80
