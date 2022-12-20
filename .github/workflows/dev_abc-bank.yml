@@ -22,15 +22,15 @@ jobs:
     - name: Log in to registry
       uses: docker/login-action@v1
       with:
-        registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_7434f0faa9e34db5b50dad3a407339e8 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_c06b4d11d7a2469eb0f0c24ad3fc2a0c }}
+        registry: https://abcbankregistry.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_d9bb31f4c22a41ada99fadfcb5d24e19 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_135e6e7dba674b918eabbd7f810e764b }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_7434f0faa9e34db5b50dad3a407339e8 }}/abc_bank:${{ github.sha }}
+        tags: abcbankregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_d9bb31f4c22a41ada99fadfcb5d24e19 }}/abc_bank:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'abc-bank'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_1d4ed879a99745edac2c277eeff90850 }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_7434f0faa9e34db5b50dad3a407339e8 }}/abc_bank:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_d9828332d0b540cba4dcba1d50fb75d5 }}
+        images: 'abcbankregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_d9bb31f4c22a41ada99fadfcb5d24e19 }}/abc_bank:${{ github.sha }}'
