@@ -47,6 +47,22 @@ class CustomerService {
       );
     }
   }
+
+  async GetBranches(userInputs) {
+    try {
+      const { page } = userInputs;
+
+      const branch = await this.repository.FindBranches({ page });
+
+      return FormateData(branch);
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find the Branches"
+      );
+    }
+  }
 }
 
 module.exports = CustomerService;

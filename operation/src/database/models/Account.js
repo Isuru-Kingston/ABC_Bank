@@ -8,6 +8,7 @@ const AccountSchema = new Schema(
     owner: { type: String, require: true },
     createdBy: { type: String, require: true },
     balance: { type: Number, require: true },
+    is_active: { type: Boolean, require: true },
   },
   {
     toJSON: {

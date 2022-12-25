@@ -1,13 +1,15 @@
 const {
   createAccountValidationRules,
   getAccountValidationRules,
+  getAccountsValidationRules,
+  deleteAccountValidationRules,
   validate,
 } = require("./middlewares/validator");
 
 const AccountService = require("../services/account-service");
 const { AppError } = require("../utils/error-handler");
-const { PublishMessage } = require("../utils");
-const { ACCOUNT_SERVICE } = require("../config");
+const { PublishMessage, RPCRequest } = require("../utils");
+const { ACCOUNT_SERVICE, ACCOUNT_RPC } = require("../config");
 const { EmployeeAuth, UserAuth } = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
@@ -27,9 +29,8 @@ module.exports = (app, channel) => {
           createdBy: id,
         });
 
-        PublishMessage(
-          channel,
-          ACCOUNT_SERVICE,
+        await RPCRequest(
+          ACCOUNT_RPC,
           JSON.stringify({
             data: { id: owner, accountId: data._id },
             event: "ADD_ACCOUNT_TO_USER",
@@ -56,12 +57,35 @@ module.exports = (app, channel) => {
       }
     }
   );
-  app.get("/account", EmployeeAuth, async (req, res, next) => {
-    try {
-      const { data } = await service.GetAccounts();
-      res.json(data);
-    } catch (err) {
-      new AppError(err.statusCode || 500, err.message, res).send();
+  app.get(
+    "/accounts/:page",
+    EmployeeAuth,
+    getAccountsValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { page } = req.params;
+        const { data } = await service.GetAccounts({ page });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
     }
-  });
+  );
+
+  app.delete(
+    "/account/:id",
+    EmployeeAuth,
+    deleteAccountValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const { data } = await service.DeleteAccount({ id });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
+    }
+  );
 };

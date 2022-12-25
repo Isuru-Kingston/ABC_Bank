@@ -15,6 +15,7 @@ const CustomerSchema = new Schema(
     },
     nic: { type: String, require: true },
     accounts: [{ type: mongoose.ObjectId, require: true }],
+    is_active: { type: Boolean, require: true },
   },
   {
     toJSON: {

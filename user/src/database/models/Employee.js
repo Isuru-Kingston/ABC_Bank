@@ -14,8 +14,9 @@ const EmployeeSchema = new Schema(
       country: { type: String, require: true },
     },
     possition: { type: String, require: true },
-    branch: { type: mongoose.ObjectId, require: true },
+    branch: { type: String, require: true },
     nic: { type: String, require: true },
+    is_active: { type: Boolean, require: true },
   },
   {
     toJSON: {

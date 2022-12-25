@@ -12,6 +12,7 @@ class AuthRepository {
         password,
         salt,
         role,
+        is_active: true,
       });
 
       const authResult = await auth.save();
@@ -30,6 +31,26 @@ class AuthRepository {
       const auth = await AuthSchema.findOne({ user_name: id });
       return auth;
     } catch (err) {
+      console.log(err);
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to SignIn"
+      );
+    }
+  }
+
+  async DeleteUser({ id }) {
+    try {
+      const auth = await AuthSchema.findOneAndUpdate(
+        { user_name: id },
+        {
+          is_active: false,
+        }
+      );
+      return auth;
+    } catch (err) {
+      console.log(err);
       throw new APIError(
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,

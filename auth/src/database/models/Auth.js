@@ -9,6 +9,7 @@ const AuthSchema = new Schema(
     password: { type: String, require: true },
     salt: { type: String, require: true },
     role: { type: String, enum: ["branch", "staff", "user"], default: "user" },
+    is_active: { type: Boolean, require: true },
   },
   {
     toJSON: {

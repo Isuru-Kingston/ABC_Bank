@@ -12,8 +12,8 @@ const AccountService = require("../services/account-service");
 const { AppError } = require("../utils/error-handler");
 const {
   EmployeeAuth,
-  UserTransactionAuth,
   UserTransactionGetAuth,
+  DirectTransactionAuth,
 } = require("./middlewares/auth");
 
 module.exports = (app) => {
@@ -21,7 +21,7 @@ module.exports = (app) => {
   const accountService = new AccountService();
   app.post(
     "/transaction/direct",
-    UserTransactionAuth,
+    DirectTransactionAuth,
     createDirectTransactionValidationRules,
     validate,
     async (req, res, next) => {

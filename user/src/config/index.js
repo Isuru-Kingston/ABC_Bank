@@ -17,4 +17,7 @@ module.exports = {
   CUSTOMER_SERVICE: "customer_service",
   EMPLOYEE_SERVICE: "employee_service",
   Auth_SERVICE: "auth_service",
+  EMPLOYEE_RPC: "EMPLOYEE_RPC",
+  CUSTOMER_RPC: "CUSTOMER_RPC",
+  ACCOUNT_RPC: "ACCOUNT_RPC",
 };

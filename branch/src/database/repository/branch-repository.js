@@ -45,6 +45,25 @@ class CustomerRepository {
       );
     }
   }
+
+  async FindBranches({ page }) {
+    try {
+      const branch = await BranchModel.find()
+        .skip(10 * (page - 1))
+        .limit(10)
+        .select("-__v")
+        .sort("createdAt");
+
+      return branch;
+    } catch (err) {
+      console.log(err);
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Find the Branch"
+      );
+    }
+  }
 }
 
 module.exports = CustomerRepository;

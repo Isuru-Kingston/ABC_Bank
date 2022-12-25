@@ -72,9 +72,28 @@ class CustomerService {
     }
   }
 
-  async GetCustomers() {
+  async DeleteCustomer(userInputs) {
     try {
-      const customers = await this.repository.FindCustomers();
+      const { id } = userInputs;
+
+      const customer = await this.repository.DeleteCustomer({
+        id,
+      });
+
+      return FormateData(customer);
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Update the Customer"
+      );
+    }
+  }
+
+  async GetCustomers(userInputs) {
+    try {
+      const { page } = userInputs;
+      const customers = await this.repository.FindCustomers({ page });
 
       return FormateData(customers);
     } catch (err) {
@@ -105,14 +124,27 @@ class CustomerService {
     }
   }
 
-  async SubscribeEvents(payload) {
+  // async SubscribeEvents(payload) {
+  //   payload = JSON.parse(payload);
+  //   const { event, data } = payload;
+
+  //   switch (event) {
+  //     case "ADD_ACCOUNT_TO_USER":
+  //       const { id, accountId } = data;
+  //       this.AddAccount({ id, accountId });
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
+  async serveRPCRequest(payload) {
     payload = JSON.parse(payload);
     const { event, data } = payload;
-
+    console.log("calling.......,", event, data);
     switch (event) {
       case "ADD_ACCOUNT_TO_USER":
         const { id, accountId } = data;
-        this.AddAccount({ id, accountId });
+        return this.AddAccount({ id, accountId });
         break;
       default:
         break;

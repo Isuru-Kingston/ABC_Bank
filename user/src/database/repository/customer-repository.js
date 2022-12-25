@@ -27,6 +27,7 @@ class CustomerRepository {
         },
         nic,
         accounts: [],
+        is_active: true,
       });
 
       const customerResult = await customer.save();
@@ -79,9 +80,32 @@ class CustomerRepository {
     }
   }
 
-  async FindCustomers() {
+  async DeleteCustomer({ id }) {
+    try {
+      const customer = await CustomerModel.findOneAndUpdate(
+        { user_id: id },
+        {
+          is_active: false,
+        }
+      );
+
+      customer.is_active = false;
+
+      return customer;
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Update the Customer"
+      );
+    }
+  }
+
+  async FindCustomers({ page }) {
     try {
       const customer = await CustomerModel.find()
+        .skip(10 * (page - 1))
+        .limit(10)
         .select("-__v")
         .sort("createdAt");
 

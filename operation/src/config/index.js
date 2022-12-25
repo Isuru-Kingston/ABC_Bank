@@ -15,4 +15,5 @@ module.exports = {
   MSG_QUEUE_URL: process.env.MSG_QUEUE_URL,
   ACCOUNT_SERVICE: "account_service",
   CUSTOMER_SERVICE: "customer_service",
+  ACCOUNT_RPC: "ACCOUNT_RPC",
 };

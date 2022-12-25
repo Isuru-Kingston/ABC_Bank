@@ -3,18 +3,31 @@ const {
   getCustomerValidationRules,
   UpdateCustomerValidationRules,
   addAccountValidationRules,
+  getCustomersValidationRules,
+  DeleteCustomerValidationRules,
   validate,
 } = require("./middlewares/validator");
 const CustomerService = require("../services/customer-service");
 const { AppError } = require("../utils/error-handler");
-const { SubscribeMessage, PublishMessage } = require("../utils");
-const { ACCOUNT_SERVICE, CUSTOMER_SERVICE } = require("../config");
+const {
+  SubscribeMessage,
+  PublishMessage,
+  RPCRequest,
+  RPCObserver,
+} = require("../utils");
+const {
+  ACCOUNT_SERVICE,
+  CUSTOMER_SERVICE,
+  CUSTOMER_RPC,
+  ACCOUNT_RPC,
+} = require("../config");
 const { UserAuth, EmployeeUserAuth } = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
   const service = new CustomerService();
 
   SubscribeMessage(channel, service, ACCOUNT_SERVICE);
+  RPCObserver(ACCOUNT_RPC, service);
 
   app.post(
     "/customer",
@@ -42,9 +55,8 @@ module.exports = (app, channel) => {
           country,
           nic,
         });
-        PublishMessage(
-          channel,
-          CUSTOMER_SERVICE,
+        await RPCRequest(
+          CUSTOMER_RPC,
           JSON.stringify({
             data: { id: data.user_id, email, password, role: "user" },
             event: "SIGN_UP",
@@ -56,14 +68,21 @@ module.exports = (app, channel) => {
       }
     }
   );
-  app.get("/customer", UserAuth, async (req, res, next) => {
-    try {
-      const { data } = await service.GetCustomers();
-      res.json(data);
-    } catch (err) {
-      new AppError(err.statusCode || 500, err.message, res).send();
+  app.get(
+    "/customers/:page",
+    UserAuth,
+    getCustomersValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { page } = req.params;
+        const { data } = await service.GetCustomers({ page });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
     }
-  });
+  );
   app.get(
     "/customer/:id",
     EmployeeUserAuth,
@@ -81,7 +100,7 @@ module.exports = (app, channel) => {
   );
   app.put(
     "/customer/:id",
-    EmployeeUserAuth,
+    UserAuth,
     UpdateCustomerValidationRules,
     validate,
     async (req, res, next) => {
@@ -115,6 +134,32 @@ module.exports = (app, channel) => {
           id,
           accountId,
         });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
+    }
+  );
+
+  app.delete(
+    "/customer/:id",
+    UserAuth,
+    DeleteCustomerValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const { data } = await service.DeleteCustomer({
+          id,
+        });
+        PublishMessage(
+          channel,
+          CUSTOMER_SERVICE,
+          JSON.stringify({
+            data: { id },
+            event: "DELETE",
+          })
+        );
         res.json(data);
       } catch (err) {
         new AppError(err.statusCode || 500, err.message, res).send();

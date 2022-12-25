@@ -17,4 +17,5 @@ module.exports = {
   CUSTOMER_SERVICE: "customer_service",
   AUTH_SERVICE: "auth_service",
   BRANCH_SERVICE: "branch_service",
+  BRANCH_RPC: "BRANCH_RPC",
 };

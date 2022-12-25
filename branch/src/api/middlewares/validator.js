@@ -21,7 +21,24 @@ const createBranchValidationRules = [
 ];
 
 const getBranchValidationRules = [
-  param("id", "Unable to Find the Branch").notEmpty().isString(),
+  param("id", "Unable to Find the Branch")
+    .notEmpty()
+    .custom(async (value) => {
+      const branch = await BranchModel.findOne({ branch_id: value });
+      if (!branch) {
+        return Promise.reject("Invalid branch Id");
+      }
+    }),
+];
+
+const getBranchesValidationRules = [
+  param("page", "Page number should be atleast 1")
+    .notEmpty()
+    .custom(async (value) => {
+      if (JSON.parse(value) < 1) {
+        return Promise.reject("Page number should be atleast 1");
+      }
+    }),
 ];
 
 const validate = (req, res, next) => {
@@ -40,6 +57,7 @@ const validate = (req, res, next) => {
 
 module.exports = {
   createBranchValidationRules,
+  getBranchesValidationRules,
   getBranchValidationRules,
   validate,
 };

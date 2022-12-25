@@ -11,6 +11,7 @@ class AccountRepository {
         owner,
         createdBy,
         balance: 0,
+        is_active: true,
       });
 
       const accountResult = await account.save();
@@ -27,7 +28,7 @@ class AccountRepository {
 
   async FindAccount({ id }) {
     try {
-      const account = await AccountModel.findById(id);
+      const account = await AccountModel.findOne({ _id: id });
       return account;
     } catch (err) {
       throw new APIError(
@@ -38,9 +39,11 @@ class AccountRepository {
     }
   }
 
-  async FindAccounts() {
+  async FindAccounts({ page }) {
     try {
       const accounts = await AccountModel.find()
+        .skip(10 * (page - 1))
+        .limit(10)
         .select("-__v")
         .sort("createdAt");
 
@@ -50,6 +53,27 @@ class AccountRepository {
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
         "Unable to Find the Accounts"
+      );
+    }
+  }
+
+  async DeleteAccount({ id }) {
+    try {
+      const account = await AccountModel.findOneAndUpdate(
+        { _id: id },
+        {
+          is_active: false,
+        }
+      );
+
+      account.is_active = false;
+
+      return account;
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Update the Customer"
       );
     }
   }

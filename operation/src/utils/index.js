@@ -1,6 +1,9 @@
 const bcrypt = require("bcrypt");
 const amqplib = require("amqplib");
 const jwt = require("jsonwebtoken");
+const { v4: uuid4 } = require("uuid");
+
+let amqplibConnection = null;
 
 const { EXCHANGE_NAME, MSG_QUEUE_URL, APP_SECRET } = require("../config");
 
@@ -15,10 +18,11 @@ module.exports.GeneratePassword = async (password, salt) => {
 
 module.exports.ValidateToken = async (req) => {
   const signature = req.header("x-auth-token");
-
+  console.log(signature);
   if (signature) {
     const payload = await jwt.verify(signature, APP_SECRET);
     req.user = payload;
+    console.log(req.user);
     return true;
   }
 
@@ -35,10 +39,16 @@ module.exports.FormateData = (data) => {
 
 //Message Broker
 
+const getChannel = async () => {
+  if (amqplibConnection === null) {
+    amqplibConnection = await amqplib.connect(MSG_QUEUE_URL);
+  }
+  return await amqplibConnection.createChannel();
+};
+
 module.exports.CreateChannel = async () => {
   try {
-    const connection = await amqplib.connect(MSG_QUEUE_URL);
-    const channel = await connection.createChannel();
+    const channel = await getChannel();
     await channel.assertQueue(EXCHANGE_NAME, "direct", { durable: true });
     return channel;
   } catch (err) {
@@ -71,4 +81,51 @@ module.exports.SubscribeMessage = async (channel, service, serivesName) => {
       noAck: true,
     }
   );
+};
+
+const requestData = async (RPC_QUEUE_NAME, requestPayload, uuid) => {
+  try {
+    const channel = await getChannel();
+
+    const q = await channel.assertQueue("", { exclusive: true });
+
+    channel.sendToQueue(
+      RPC_QUEUE_NAME,
+      Buffer.from(JSON.stringify(requestPayload)),
+      {
+        replyTo: q.queue,
+        correlationId: uuid,
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      // timeout n
+      const timeout = setTimeout(() => {
+        channel.close();
+        resolve("API could not fullfil the request!");
+      }, 8000);
+      channel.consume(
+        q.queue,
+        (msg) => {
+          if (msg.properties.correlationId == uuid) {
+            resolve(JSON.parse(msg.content.toString()));
+            clearTimeout(timeout);
+          } else {
+            reject("data Not found!");
+          }
+        },
+        {
+          noAck: true,
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+    return "error";
+  }
+};
+
+module.exports.RPCRequest = async (RPC_QUEUE_NAME, requestPayload) => {
+  const uuid = uuid4(); // correlationId
+  return await requestData(RPC_QUEUE_NAME, requestPayload, uuid);
 };

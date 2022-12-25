@@ -44,9 +44,10 @@ class AccountService {
     }
   }
 
-  async GetAccounts() {
+  async GetAccounts(userInputs) {
     try {
-      const accounts = await this.repository.FindAccounts();
+      const { page } = userInputs;
+      const accounts = await this.repository.FindAccounts({ page });
 
       return FormateData(accounts);
     } catch (err) {
@@ -54,6 +55,21 @@ class AccountService {
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
         "Unable to Find the Accounts"
+      );
+    }
+  }
+
+  async DeleteAccount(userInputs) {
+    try {
+      const { id } = userInputs;
+      const accounts = await this.repository.DeleteAccount({ id });
+
+      return FormateData(accounts);
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Delete the Accounts"
       );
     }
   }

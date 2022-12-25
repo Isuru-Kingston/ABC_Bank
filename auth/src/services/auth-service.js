@@ -22,6 +22,8 @@ class AuthService {
 
       let authPassword = await GeneratePassword(password, salt);
 
+      console.log("pre created...", authPassword);
+
       const newAuth = await this.repository.SignUp({
         id,
         email,
@@ -30,8 +32,11 @@ class AuthService {
         role,
       });
 
+      console.log("created...", newAuth);
+
       return FormateData(newAuth);
     } catch (err) {
+      console.log(err);
       throw new APIError(
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
@@ -52,13 +57,17 @@ class AuthService {
           existingAuth.password,
           existingAuth.salt
         );
-        if (validPassword) {
+        if (validPassword && existingAuth.is_active) {
           const token = await GenerateToken({
             email: existingAuth.email,
             id: existingAuth.user_name,
             role: existingAuth.role,
           });
-          return FormateData({ id: existingAuth._id, token });
+          return FormateData({
+            id: existingAuth._id,
+            token,
+            role: existingAuth.role,
+          });
         } else {
           throw new APIError(
             "API Error",
@@ -74,6 +83,7 @@ class AuthService {
         );
       }
     } catch (err) {
+      console.log(err);
       throw new APIError(
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
@@ -82,13 +92,46 @@ class AuthService {
     }
   }
 
+  async DeleteUser(userInputs) {
+    try {
+      const { id } = userInputs;
+
+      const deletedUser = await this.repository.DeleteUser({
+        id,
+      });
+
+      return FormateData(deletedUser);
+    } catch (err) {
+      console.log(err);
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to SignUp"
+      );
+    }
+  }
+
   async SubscribeEvents(payload) {
+    payload = JSON.parse(payload);
+    const { event, data } = payload;
+    switch (event) {
+      case "DELETE":
+        const { id } = data;
+        this.DeleteUser({ id });
+        break;
+      default:
+        break;
+    }
+  }
+
+  async serveRPCRequest(payload) {
     payload = JSON.parse(payload);
     const { event, data } = payload;
     switch (event) {
       case "SIGN_UP":
         const { id, email, password, role } = data;
-        this.SignUp({ id, email, password, role });
+        console.log("recived...", data);
+        return this.SignUp({ id, email, password, role });
         break;
       default:
         break;

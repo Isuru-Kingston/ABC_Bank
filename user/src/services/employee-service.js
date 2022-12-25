@@ -36,7 +36,6 @@ class EmployeeService {
 
       return FormateData(newEmployee);
     } catch (err) {
-      console.log(err);
       throw new APIError(
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
@@ -95,9 +94,28 @@ class EmployeeService {
     }
   }
 
-  async GetEmployees() {
+  async DeleteEmployee(userInputs) {
     try {
-      const employees = await this.repository.FindEmployees();
+      const { id } = userInputs;
+
+      const employee = await this.repository.DeleteEmployee({
+        id,
+      });
+
+      return FormateData(employee);
+    } catch (err) {
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Update the Employee"
+      );
+    }
+  }
+
+  async GetEmployees(userInputs) {
+    try {
+      const { page, id } = userInputs;
+      const employees = await this.repository.FindEmployees({ page, id });
 
       return FormateData(employees);
     } catch (err) {

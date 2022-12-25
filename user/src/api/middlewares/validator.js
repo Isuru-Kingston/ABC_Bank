@@ -20,16 +20,30 @@ const createEmployeeValidationRules = [
   body("country").isString().notEmpty(),
   body("nic").isString().notEmpty(),
   body("possition").isString().notEmpty(),
-  body("branch", "Invalid branch").notEmpty().isMongoId(),
 ];
 
 const getEmployeeValidationRules = [
-  param("id", "Unable to Find the Employee").notEmpty().isString(),
+  param("id", "Unable to Find the Employee")
+    .notEmpty()
+    .isString()
+    .matches(/^emp_\d+$/),
+];
+
+const getEmployeesValidationRules = [
+  param("page", "Unable to Find the Employee")
+    .notEmpty()
+    .custom(async (value) => {
+      if (JSON.parse(value) < 1) {
+        return Promise.reject("Page number should be atleast 1");
+      }
+    }),
 ];
 
 const UpdateEmployeeValidationRules = [
   param("id")
     .notEmpty()
+    .isString()
+    .matches(/^emp_\d+$/)
     .custom(async (value) => {
       const employee = await EmployeeModel.findOne({ employee_id: value });
       if (!employee) {
@@ -42,7 +56,23 @@ const UpdateEmployeeValidationRules = [
   body("city").isString().notEmpty(),
   body("country").isString().notEmpty(),
   body("possition").isString().notEmpty(),
-  body("branch", "Invalid branch").notEmpty().isMongoId(),
+  body("branch", "Invalid branch")
+    .notEmpty()
+    .isString()
+    .matches(/^branch_\d+$/),
+];
+
+const DeleteEmployeeValidationRules = [
+  param("id")
+    .notEmpty()
+    .isString()
+    .matches(/^emp_\d+$/)
+    .custom(async (value) => {
+      const employee = await EmployeeModel.findOne({ employee_id: value });
+      if (!employee) {
+        return Promise.reject("Can't find Employee");
+      }
+    }),
 ];
 
 const createCustomerValidationRules = [
@@ -65,16 +95,20 @@ const createCustomerValidationRules = [
 ];
 
 const getCustomerValidationRules = [
-  param("id", "Unable to Find the Customer").notEmpty().isString(),
+  param("id", "Unable to Find the Customer")
+    .notEmpty()
+    .isString()
+    .matches(/^user_\d+$/),
 ];
 
 const UpdateCustomerValidationRules = [
   param("id")
     .notEmpty()
+    .matches(/^user_\d+$/)
     .custom(async (value) => {
       const employee = await EmployeeModel.findOne({ user_id: value });
       if (!employee) {
-        return Promise.reject("Can't find Employee");
+        return Promise.reject("Can't find User");
       }
     }),
   body("phone").isString().notEmpty(),
@@ -84,8 +118,33 @@ const UpdateCustomerValidationRules = [
   body("country").isString().notEmpty(),
 ];
 
+const DeleteCustomerValidationRules = [
+  param("id")
+    .notEmpty()
+    .matches(/^user_\d+$/)
+    .custom(async (value) => {
+      const employee = await EmployeeModel.findOne({ user_id: value });
+      if (!employee) {
+        return Promise.reject("Can't find User");
+      }
+    }),
+];
+
+const getCustomersValidationRules = [
+  param("page", "Unable to Find the Employee")
+    .notEmpty()
+    .custom(async (value) => {
+      if (JSON.parse(value) < 1) {
+        return Promise.reject("Page number should be atleast 1");
+      }
+    }),
+];
+
 const addAccountValidationRules = [
-  param("id", "Unable to Find the Employee").notEmpty().isString(),
+  param("id", "Unable to Find the User")
+    .notEmpty()
+    .isString()
+    .matches(/^user_\d+$/),
   body("accountId", "Invalid Account").notEmpty().isMongoId(),
 ];
 
@@ -106,10 +165,14 @@ const validate = (req, res, next) => {
 module.exports = {
   createEmployeeValidationRules,
   getEmployeeValidationRules,
+  getEmployeesValidationRules,
   UpdateEmployeeValidationRules,
   createCustomerValidationRules,
   getCustomerValidationRules,
   UpdateCustomerValidationRules,
   addAccountValidationRules,
+  DeleteEmployeeValidationRules,
+  getCustomersValidationRules,
+  DeleteCustomerValidationRules,
   validate,
 };

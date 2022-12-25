@@ -1,13 +1,15 @@
 const {
   createEmployeeValidationRules,
   getEmployeeValidationRules,
+  getEmployeesValidationRules,
   UpdateEmployeeValidationRules,
+  DeleteEmployeeValidationRules,
   validate,
 } = require("./middlewares/validator");
 const EmployeeService = require("../services/employee-service");
 const { AppError } = require("../utils/error-handler");
-const { PublishMessage } = require("../utils");
-const { EMPLOYEE_SERVICE } = require("../config");
+const { PublishMessage, RPCRequest } = require("../utils");
+const { EMPLOYEE_SERVICE, EMPLOYEE_RPC } = require("../config");
 const { BranchAuth, EmployeeAuth } = require("./middlewares/auth");
 
 module.exports = (app, channel) => {
@@ -28,9 +30,9 @@ module.exports = (app, channel) => {
           city,
           country,
           possition,
-          branch,
           nic,
         } = req.body;
+        const { id } = req.user.id;
         const { data } = await service.CreateEmployee({
           email,
           phone,
@@ -39,31 +41,41 @@ module.exports = (app, channel) => {
           city,
           country,
           possition,
-          branch,
+          branch: id,
           nic,
         });
-        PublishMessage(
-          channel,
-          EMPLOYEE_SERVICE,
+        console.log(data);
+        await RPCRequest(
+          EMPLOYEE_RPC,
           JSON.stringify({
             data: { id: data.employee_id, email, password, role: "staff" },
             event: "SIGN_UP",
           })
         );
+
+        res.json(data);
+      } catch (err) {
+        console.log(err);
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
+    }
+  );
+  app.get(
+    "/employees/:page",
+    BranchAuth,
+    getEmployeesValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { page } = req.params;
+        const { id } = req.user.id;
+        const { data } = await service.GetEmployees({ page, id });
         res.json(data);
       } catch (err) {
         new AppError(err.statusCode || 500, err.message, res).send();
       }
     }
   );
-  app.get("/employee", BranchAuth, async (req, res, next) => {
-    try {
-      const { data } = await service.GetEmployees();
-      res.json(data);
-    } catch (err) {
-      new AppError(err.statusCode || 500, err.message, res).send();
-    }
-  });
   app.get(
     "/employee/:id",
     EmployeeAuth,
@@ -81,7 +93,7 @@ module.exports = (app, channel) => {
   );
   app.put(
     "/employee/:id",
-    EmployeeAuth,
+    BranchAuth,
     UpdateEmployeeValidationRules,
     validate,
     async (req, res, next) => {
@@ -99,6 +111,32 @@ module.exports = (app, channel) => {
           possition,
           branch,
         });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
+    }
+  );
+
+  app.delete(
+    "/employee/:id",
+    BranchAuth,
+    DeleteEmployeeValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const { data } = await service.DeleteEmployee({
+          id,
+        });
+        PublishMessage(
+          channel,
+          EMPLOYEE_SERVICE,
+          JSON.stringify({
+            data: { id },
+            event: "DELETE",
+          })
+        );
         res.json(data);
       } catch (err) {
         new AppError(err.statusCode || 500, err.message, res).send();

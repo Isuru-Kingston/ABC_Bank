@@ -18,4 +18,7 @@ module.exports = {
   AUTH_SERVICE: "auth_service",
   BRANCH_SERVICE: "branch_service",
   EMPLOYEE_SERVICE: "employee_service",
+  BRANCH_RPC: "BRANCH_RPC",
+  EMPLOYEE_RPC: "EMPLOYEE_RPC",
+  CUSTOMER_RPC: "CUSTOMER_RPC",
 };

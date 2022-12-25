@@ -30,6 +30,7 @@ class EmployeeRepository {
         possition,
         branch,
         nic,
+        is_active: true,
       });
 
       const employeeResult = await employee.save();
@@ -95,9 +96,15 @@ class EmployeeRepository {
     }
   }
 
-  async FindEmployees() {
+  async FindEmployees({ page, id }) {
     try {
-      const employees = await EmployeeModel.find()
+      console.log("id.....", id);
+      const employees = await EmployeeModel.find({
+        branch: id,
+        is_active: true,
+      })
+        .skip(10 * (page - 1))
+        .limit(10)
         .select("-__v")
         .sort("createdAt");
 
@@ -107,6 +114,27 @@ class EmployeeRepository {
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
         "Unable to Find the Employees"
+      );
+    }
+  }
+
+  async DeleteEmployee({ id }) {
+    try {
+      const employee = await EmployeeModel.findOneAndUpdate(
+        { employee_id: id },
+        {
+          is_active: false,
+        }
+      );
+      employee.is_active = false;
+
+      return employee;
+    } catch (err) {
+      console.log(err);
+      throw new APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Delete the Employee"
       );
     }
   }

@@ -1,19 +1,20 @@
 const {
   createBranchValidationRules,
+  getBranchesValidationRules,
   getBranchValidationRules,
   validate,
 } = require("./middlewares/validator");
 const { BranchAuth } = require("./middlewares/auth");
 const BranchService = require("../services/branch-service");
 const { AppError } = require("../utils/error-handler");
-const { PublishMessage } = require("../utils");
-const { BRANCH_SERVICE } = require("../config");
+const { PublishMessage, RPCRequest } = require("../utils");
+const { BRANCH_SERVICE, BRANCH_RPC } = require("../config");
 
 module.exports = (app, channel) => {
   const service = new BranchService();
 
   app.post(
-    "/",
+    "/branch",
     BranchAuth,
     createBranchValidationRules,
     validate,
@@ -31,14 +32,14 @@ module.exports = (app, channel) => {
           country,
         });
 
-        PublishMessage(
-          channel,
-          BRANCH_SERVICE,
+        await RPCRequest(
+          BRANCH_RPC,
           JSON.stringify({
             data: { id: data.branch_id, email, password, role: "branch" },
             event: "SIGN_UP",
           })
         );
+
         res.json(data);
       } catch (err) {
         new AppError(err.statusCode || 500, err.message, res).send();
@@ -46,7 +47,7 @@ module.exports = (app, channel) => {
     }
   );
   app.get(
-    "/:id",
+    "/branch/:id",
     BranchAuth,
     getBranchValidationRules,
     validate,
@@ -54,6 +55,22 @@ module.exports = (app, channel) => {
       try {
         const { id } = req.params;
         const { data } = await service.GetBranch({ id });
+        res.json(data);
+      } catch (err) {
+        new AppError(err.statusCode || 500, err.message, res).send();
+      }
+    }
+  );
+
+  app.get(
+    "/branches/:page",
+    BranchAuth,
+    getBranchesValidationRules,
+    validate,
+    async (req, res, next) => {
+      try {
+        const { page } = req.params;
+        const { data } = await service.GetBranches({ page });
         res.json(data);
       } catch (err) {
         new AppError(err.statusCode || 500, err.message, res).send();

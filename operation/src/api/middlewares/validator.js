@@ -1,5 +1,6 @@
 const { body, param, validationResult } = require("express-validator");
 const { ValidationError } = require("../../utils/error-handler");
+const { AccountModel } = require("../../database/models");
 
 const createAccountValidationRules = [
   body("branch", "Unable to Find the Branch").notEmpty().isString(),
@@ -7,17 +8,86 @@ const createAccountValidationRules = [
 ];
 
 const getAccountValidationRules = [
-  param("id", "Unable to Find the Account").notEmpty().isMongoId(),
+  param("id", "Unable to Find the Account")
+    .notEmpty()
+    .custom(async (value) => {
+      try {
+        const account = await AccountModel.findOne({ _id: value });
+        if (!account) {
+          return Promise.reject("Unable to Find the Account");
+        }
+      } catch (err) {
+        return Promise.reject("Unable to Find the Account");
+      }
+    }),
+];
+
+const getAccountsValidationRules = [
+  param("page", "Unable to Find the Account")
+    .notEmpty()
+    .custom(async (value) => {
+      if (JSON.parse(value) < 1) {
+        return Promise.reject("Page number should be atleast 1");
+      }
+    }),
+];
+
+const deleteAccountValidationRules = [
+  param("id", "Unable to Find the Account")
+    .notEmpty()
+    .custom(async (value) => {
+      try {
+        const account = await AccountModel.findOne({ _id: value });
+        if (!account) {
+          return Promise.reject("Unable to Find the Account");
+        }
+      } catch (err) {
+        return Promise.reject("Unable to Find the Account");
+      }
+    }),
 ];
 
 const createDirectTransactionValidationRules = [
-  body("account", "Unable to Find the account").notEmpty().isMongoId(),
-  body("from", "Unable to Find the account").notEmpty().isMongoId(),
+  body("account", "Unable to Find the account")
+    .notEmpty()
+    .custom(async (value) => {
+      try {
+        const account = await AccountModel.findOne({ _id: value });
+        if (!account) {
+          return Promise.reject("Unable to Find the Account");
+        }
+      } catch (err) {
+        return Promise.reject("Unable to Find the Account");
+      }
+    }),
+  body("from", "Unable to Find the account")
+    .notEmpty()
+    .custom(async (value) => {
+      try {
+        const account = await AccountModel.findOne({ _id: value });
+        if (!account) {
+          return Promise.reject("Unable to Find the Account");
+        }
+      } catch (err) {
+        return Promise.reject("Unable to Find the Account");
+      }
+    }),
   body("amount").notEmpty().isNumeric(),
 ];
 
 const createInDirectTransactionValidationRules = [
-  body("account", "Unable to Find the account").notEmpty().isMongoId(),
+  body("account", "Unable to Find the account")
+    .notEmpty()
+    .custom(async (value) => {
+      try {
+        const account = await AccountModel.findOne({ _id: value });
+        if (!account) {
+          return Promise.reject("Unable to Find the Account");
+        }
+      } catch (err) {
+        return Promise.reject("Unable to Find the Account");
+      }
+    }),
   body("isWithdraw").notEmpty().isBoolean(),
   body("amount").notEmpty().isNumeric(),
 ];
@@ -56,5 +126,7 @@ module.exports = {
   getTransactionValidationRules,
   getTransactionsByAccountValidationRules,
   getTransactionsBySenderValidationRules,
+  getAccountsValidationRules,
+  deleteAccountValidationRules,
   validate,
 };
