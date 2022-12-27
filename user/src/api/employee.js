@@ -23,6 +23,7 @@ module.exports = (app, channel) => {
       try {
         const {
           email,
+          name,
           password,
           phone,
           street,
@@ -35,6 +36,7 @@ module.exports = (app, channel) => {
         const { id } = req.user.id;
         const { data } = await service.CreateEmployee({
           email,
+          name,
           phone,
           street,
           postalCode,
@@ -99,10 +101,19 @@ module.exports = (app, channel) => {
     async (req, res, next) => {
       try {
         const { id } = req.params;
-        const { phone, street, postalCode, city, country, possition, branch } =
-          req.body;
+        const {
+          phone,
+          name,
+          street,
+          postalCode,
+          city,
+          country,
+          possition,
+          branch,
+        } = req.body;
         const { data } = await service.UpdateEmployee({
           id,
+          name,
           phone,
           street,
           postalCode,

@@ -38,6 +38,7 @@ module.exports = (app, channel) => {
       try {
         const {
           email,
+          name,
           password,
           phone,
           street,
@@ -48,6 +49,7 @@ module.exports = (app, channel) => {
         } = req.body;
         const { data } = await service.CreateCustomer({
           email,
+          name,
           phone,
           street,
           postalCode,
@@ -106,7 +108,7 @@ module.exports = (app, channel) => {
     async (req, res, next) => {
       try {
         const { id } = req.params;
-        const { phone, street, postalCode, city, country } = req.body;
+        const { phone, street, postalCode, city, name, country } = req.body;
         const { data } = await service.UpdateCustomer({
           id,
           phone,
@@ -114,6 +116,7 @@ module.exports = (app, channel) => {
           postalCode,
           city,
           country,
+          name,
         });
         res.json(data);
       } catch (err) {

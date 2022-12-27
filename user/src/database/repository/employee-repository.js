@@ -6,6 +6,7 @@ const { APIError, STATUS_CODES } = require("../../utils/app-errors");
 class EmployeeRepository {
   async CreateEmployee({
     email,
+    name,
     phone,
     street,
     postalCode,
@@ -19,6 +20,7 @@ class EmployeeRepository {
       let id = (await EmployeeModel.count()) + 1;
       const employee = new EmployeeModel({
         employee_id: "emp_" + id,
+        name,
         email,
         phone,
         address: {
@@ -60,6 +62,7 @@ class EmployeeRepository {
 
   async UpdateEmployee({
     id,
+    name,
     phone,
     street,
     postalCode,
@@ -76,9 +79,11 @@ class EmployeeRepository {
           address: { street, postalCode, city, country },
           possition,
           branch,
+          name,
         }
       );
       employee.phone = phone;
+      employee.name = name;
       employee.possition = possition;
       employee.branch = branch;
       employee.address.street = street;
@@ -101,7 +106,7 @@ class EmployeeRepository {
       console.log("id.....", id);
       const employees = await EmployeeModel.find({
         branch: id,
-        is_active: true,
+        // is_active: true,
       })
         .skip(10 * (page - 1))
         .limit(10)

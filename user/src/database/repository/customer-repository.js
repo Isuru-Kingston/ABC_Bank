@@ -6,6 +6,7 @@ const { APIError, STATUS_CODES } = require("../../utils/app-errors");
 class CustomerRepository {
   async CreateCustomer({
     email,
+    name,
     phone,
     street,
     postalCode,
@@ -18,6 +19,7 @@ class CustomerRepository {
       const customer = new CustomerModel({
         user_id: "user_" + id,
         email,
+        name,
         phone,
         address: {
           street,
@@ -55,16 +57,18 @@ class CustomerRepository {
     }
   }
 
-  async UpdateCustomer({ id, phone, street, postalCode, city, country }) {
+  async UpdateCustomer({ id, phone, street, postalCode, city, country, name }) {
     try {
       const customer = await CustomerModel.findOneAndUpdate(
         { user_id: id },
         {
           phone,
           address: { street, postalCode, city, country },
+          name,
         }
       );
       customer.phone = phone;
+      customer.name = name;
       customer.address.street = street;
       customer.address.postalCode = postalCode;
       customer.address.city = city;

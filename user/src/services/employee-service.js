@@ -12,6 +12,7 @@ class EmployeeService {
     try {
       const {
         email,
+        name,
         phone,
         street,
         postalCode,
@@ -24,6 +25,7 @@ class EmployeeService {
 
       const newEmployee = await this.repository.CreateEmployee({
         email,
+        name,
         phone,
         street,
         postalCode,
@@ -64,6 +66,7 @@ class EmployeeService {
     try {
       const {
         id,
+        name,
         phone,
         street,
         postalCode,
@@ -75,6 +78,7 @@ class EmployeeService {
 
       const employee = await this.repository.UpdateEmployee({
         id,
+        name,
         phone,
         street,
         postalCode,

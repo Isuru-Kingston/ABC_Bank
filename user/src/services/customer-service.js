@@ -10,11 +10,12 @@ class CustomerService {
 
   async CreateCustomer(userInputs) {
     try {
-      const { email, phone, street, postalCode, city, country, nic } =
+      const { email, phone, street, postalCode, city, country, nic, name } =
         userInputs;
 
       const newCustomer = await this.repository.CreateCustomer({
         email,
+        name,
         phone,
         street,
         postalCode,
@@ -51,10 +52,11 @@ class CustomerService {
 
   async UpdateCustomer(userInputs) {
     try {
-      const { id, phone, street, postalCode, city, country } = userInputs;
+      const { id, phone, street, postalCode, city, country, name } = userInputs;
 
       const customer = await this.repository.UpdateCustomer({
         id,
+        name,
         phone,
         street,
         postalCode,

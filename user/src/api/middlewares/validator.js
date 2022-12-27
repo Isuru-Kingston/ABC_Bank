@@ -13,6 +13,7 @@ const createEmployeeValidationRules = [
       }
     }),
   body("phone").isString().notEmpty(),
+  body("name").isString().notEmpty(),
   body("password").isLength({ min: 5 }),
   body("street").isString().notEmpty(),
   body("postalCode").isString().notEmpty(),
@@ -51,6 +52,7 @@ const UpdateEmployeeValidationRules = [
       }
     }),
   body("phone").isString().notEmpty(),
+  body("name").isString().notEmpty(),
   body("street").isString().notEmpty(),
   body("postalCode").isString().notEmpty(),
   body("city").isString().notEmpty(),
@@ -86,6 +88,7 @@ const createCustomerValidationRules = [
       }
     }),
   body("phone").isString().notEmpty(),
+  body("name").isString().notEmpty(),
   body("password").isLength({ min: 5 }),
   body("street").isString().notEmpty(),
   body("postalCode").isString().notEmpty(),
@@ -112,6 +115,7 @@ const UpdateCustomerValidationRules = [
       }
     }),
   body("phone").isString().notEmpty(),
+  body("name").isString().notEmpty(),
   body("street").isString().notEmpty(),
   body("postalCode").isString().notEmpty(),
   body("city").isString().notEmpty(),
